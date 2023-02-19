@@ -9,6 +9,7 @@
  Command line tool that produces embeddings for a large documents base based on the pretrained ctx & question encoders
  Supposed to be used in a 'sharded' way to speed up the process.
 """
+import numpy as np
 import logging
 import math
 import os
@@ -17,7 +18,6 @@ import pickle
 from typing import List, Tuple
 
 import hydra
-import numpy as np
 import torch
 from omegaconf import DictConfig, OmegaConf
 from torch import nn
@@ -33,6 +33,9 @@ from dpr.utils.model_utils import (
     load_states_from_checkpoint,
     move_to_device,
 )
+
+# import transformers
+# transformers.logging.set_verbosity_error()
 
 logger = logging.getLogger()
 setup_logger(logger)
@@ -72,10 +75,9 @@ def gen_ctx_vectors(
 
         # TODO: refactor to avoid 'if'
         if extra_info:
-            results.extend([(ctx_ids[i], out[i].view(-1).numpy(), *extra_info[i]) for i in range(out.size(0))])
+            results.extend([(ctx_ids[i], np.float32(out[i].view(-1).numpy()), *extra_info[i]) for i in range(out.size(0))])
         else:
-            results.extend([(ctx_ids[i], out[i].view(-1).numpy()) for i in range(out.size(0))])
-
+            results.extend([(ctx_ids[i], np.float32(out[i].view(-1).numpy())) for i in range(out.size(0))])
         if total % 10 == 0:
             logger.info("Encoded passages %d", total)
     return results
@@ -126,7 +128,7 @@ def main(cfg: DictConfig):
     ctx_src = hydra.utils.instantiate(cfg.ctx_sources[cfg.ctx_src])
     all_passages_dict = {}
     ctx_src.load_data_to(all_passages_dict)
-    all_passages = [(k, v) for k, v in all_passages_dict.items()]
+    all_passages = [(k, v) for k, v in all_passages_dict.items()]  # (sample_id, BiencoderPassage(text, title))
 
     shard_size = math.ceil(len(all_passages) / cfg.num_shards)
     start_idx = cfg.shard_id * shard_size
@@ -146,7 +148,7 @@ def main(cfg: DictConfig):
     pathlib.Path(os.path.dirname(file)).mkdir(parents=True, exist_ok=True)
     logger.info("Writing results to %s" % file)
     with open(file, mode="wb") as f:
-        pickle.dump(data, f)
+        pickle.dump(data, f)  # not solvable with dill
 
     logger.info("Total passages processed %d. Written to %s", len(data), file)
 

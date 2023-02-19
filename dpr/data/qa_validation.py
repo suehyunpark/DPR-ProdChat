@@ -62,19 +62,19 @@ def calculate_matches(
 
     processes = ProcessPool(processes=workers_num)
     logger.info("Matching answers in top docs...")
-    get_score_partial = partial(check_answer, match_type=match_type, tokenizer=tokenizer)
+    get_score_partial = partial(check_answer, match_type=match_type, tokenizer=tokenizer)  # create a new function with some default arguments set
 
     questions_answers_docs = zip(answers, closest_docs)
     scores = processes.map(get_score_partial, questions_answers_docs)
 
     logger.info("Per question validation results len=%d", len(scores))
 
-    n_docs = len(closest_docs[0][0])
+    n_docs = len(closest_docs[0][0])  # k = 100
     top_k_hits = [0] * n_docs
     for question_hits in scores:
-        best_hit = next((i for i, x in enumerate(question_hits) if x), None)
+        best_hit = next((i for i, x in enumerate(question_hits) if x), None)  # the best_hit variable is set to the index of the first hit in the list, if any
         if best_hit is not None:
-            top_k_hits[best_hit:] = [v + 1 for v in top_k_hits[best_hit:]]
+            top_k_hits[best_hit:] = [v + 1 for v in top_k_hits[best_hit:]]  # the values in top_k_hits from best_hit to the end of the list are incremented by 1
 
     return QAMatchStats(top_k_hits, scores)
 

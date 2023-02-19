@@ -1,0 +1,13 @@
+# @package _group_
+
+reddit_test:
+  _target_: dpr.data.retriever_data.JsonQASrc
+  file: '/home/miyoung/suehyun/DPR/data/retriever/reddit/test_examples_v2.json'
+
+reddit_train:
+  _target_: dpr.data.retriever_data.JsonQASrc
+  file: '/home/miyoung/suehyun/DPR/data/retriever/reddit/train_v3.json'
+
+reddit_dev:
+  _target_: dpr.data.retriever_data.JsonQASrc
+  file: '/home/miyoung/suehyun/DPR/data/retriever/reddit/val_v3.json'

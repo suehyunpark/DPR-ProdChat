@@ -1,7 +1,7 @@
 defaults:
   - encoder: hf_bert # defines encoder initialization parameters
-  - datasets: retriever_default # contains a list of all possible sources of queries for evaluation. Specific set is selected by qa_dataset parameter
-  - ctx_sources: default_sources # contains a list of all possible passage sources. Specific passages sources selected by ctx_datatsets parameter
+  - datasets: retriever_prodchat # contains a list of all possible sources of queries for evaluation. Specific set is selected by qa_dataset parameter
+  - ctx_sources: prodchat_sources # contains a list of all possible passage sources. Specific passages sources selected by ctx_datatsets parameter
 
 indexers:
   flat:
@@ -14,40 +14,40 @@ indexers:
     _target_: dpr.indexer.faiss_indexers.DenseHNSWSQIndexer
 
 # the name of the queries dataset from the 'datasets' config group
-qa_dataset:
+qa_dataset: reddit_test
 
 # a list of names of the passages datasets from the 'ctx_sources' config group
-ctx_datatsets:
+ctx_datatsets: [amazon_review]
 
 #Glob paths to encoded passages (from generate_dense_embeddings tool)
-encoded_ctx_files: []
+encoded_ctx_files: ['/home/miyoung/suehyun/DPR/data/retriever_results/multiset/seq_len=512/amazon_review_passages_0']
 
-out_file:
+out_file: '/home/miyoung/suehyun/DPR/data/retriever_results/reddit/multiset/seq_len=512/test.json'
 # "regex" or "string"
 match: string
-n_docs: 100
+n_docs: 1000
 validation_workers: 16
 
 # Batch size to generate query embeddings
-batch_size: 128
+batch_size: 8
 
 # Whether to lower case the input text. Set True for uncased models, False for the cased ones.
 do_lower_case: True
 
 # The attribute name of encoder to use for queries. Options for the BiEncoder model: question_model, ctx_model
 # question_model is used if this param is empty
-encoder_path:
+encoder_path: question_model
 
 # path to the FAISS index location - it is only needed if you want to serialize faiss index to files or read from them
 # (instead of using encoded_ctx_files)
 # it should point to either directory or a common index files prefix name
 # if there is no index at the specific location, the index will be created from encoded_ctx_files
-index_path:
+index_path: '/home/miyoung/suehyun/DPR/indexes/multiset/seq_len=512/amazon_review'
 
 kilt_out_file:
 
 # A trained bi-encoder checkpoint file to initialize the model
-model_file:
+model_file: '/home/miyoung/suehyun/DPR/checkpoint/retriever/multiset/bert-base-encoder.cp'
 
 validate_as_tables: False
 
@@ -67,11 +67,11 @@ special_tokens:
 # local_rank for distributed training on gpus
 local_rank: -1
 global_loss_buf_sz: 150000
-device:
+device: 1
 distributed_world_size:
 distributed_port:
 no_cuda: False
-n_gpu:
+n_gpu: 1
 fp16: False
 
 # For fp16: Apex AMP optimization level selected in ['O0', 'O1', 'O2', and 'O3']."

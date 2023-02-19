@@ -13,6 +13,7 @@ from omegaconf import DictConfig
 from dpr.data.biencoder_data import (
     BiEncoderPassage,
     normalize_passage,
+    normalize_passage_keep_newline,
     get_dpr_files,
     read_nq_tables_jsonl,
     split_tables_to_chunks,
@@ -122,7 +123,36 @@ class CsvQASrc(QASrc):
             self.data = data[start:end] if end != -1 else data[start:]
         else:
             self.data = data
+            
 
+class JsonQASrc(QASrc):
+    def __init__(
+        self,
+        file: str,
+        selector: DictConfig = None,
+        question_attr: str = "content",
+        answers_attr: str = "comment",
+        id_attr: str = "sid",
+        special_query_token: str = None,
+        query_special_suffix: str = None,
+    ):
+        super().__init__(file, selector, special_query_token, query_special_suffix)
+        self.question_attr = question_attr
+        self.answers_attr = answers_attr
+        self.id_attr = id_attr
+        
+    def load_data(self):
+        super().load_data()
+        data = []
+        with open(self.file, mode="r") as json_reader:
+            jobjs = json.load(json_reader)["data"]
+            for jobj in jobjs:
+                question = jobj[self.question_attr]
+                answer = jobj[self.answers_attr]
+                id = jobj[self.id_attr]
+                data.append(QASample(self._process_question(question), id, answer))
+        self.data = data
+                
 
 class JsonlQASrc(QASrc):
     def __init__(
@@ -284,6 +314,45 @@ class CsvCtxSrc(RetrieverData):
                 passage = row[self.text_col].strip('"')
                 if self.normalize:
                     passage = normalize_passage(passage)
+                ctxs[sample_id] = BiEncoderPassage(passage, row[self.title_col])
+
+
+class CsvCtxSrcNewline(RetrieverData):
+    def __init__(
+        self,
+        file: str,
+        id_col: int = 0,
+        text_col: int = 1,
+        title_col: int = 2,
+        id_prefix: str = None,
+        normalize: bool = True,
+    ):
+        super().__init__(file)
+        self.text_col = text_col
+        self.title_col = title_col
+        self.id_col = id_col
+        self.id_prefix = id_prefix
+        self.normalize = normalize
+        self.newline_token = '<NL>'
+
+    def load_data_to(self, ctxs: Dict[object, BiEncoderPassage]):
+        super().load_data()
+        logger.info("Reading file %s", self.file)
+        with open(self.file) as ifile:
+            reader = csv.reader(ifile, delimiter="\t")
+            for row in reader:
+                # for row in ifile:
+                # row = row.strip().split("\t")
+                if row[self.id_col] == "id":
+                    continue
+                if self.id_prefix:
+                    sample_id = self.id_prefix + str(row[self.id_col])
+                else:
+                    sample_id = row[self.id_col]
+                passage = row[self.text_col].strip('"')
+                passage = passage.replace(self.newline_token, '\n')
+                if self.normalize:
+                    passage = normalize_passage_keep_newline(passage)
                 ctxs[sample_id] = BiEncoderPassage(passage, row[self.title_col])
 
 

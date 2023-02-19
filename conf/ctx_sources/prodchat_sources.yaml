@@ -1,0 +1,31 @@
+# @package _group_
+
+amazon_review:
+  _target_: dpr.data.retriever_data.CsvCtxSrcNewline
+  file: '/home/miyoung/suehyun/DPR/data/amazon_review/psgs_amazon_review.tsv'
+  id_prefix: 'review:'
+
+amazon_spec_features:
+  _target_: dpr.data.retriever_data.CsvCtxSrcNewline
+  file: '/home/miyoung/suehyun/DPR/data/amazon_specs/psgs_amazon_specs_features_filtered.tsv'
+  id_prefix: 'spec-features:'
+
+amazon_spec_description:
+  _target_: dpr.data.retriever_data.CsvCtxSrcNewline
+  file: '/home/miyoung/suehyun/DPR/data/amazon_specs/psgs_amazon_specs_description_filtered.tsv'
+  id_prefix: 'spec-description:'
+  
+amazon_spec_meta:
+  _target_: dpr.data.retriever_data.CsvCtxSrcNewline
+  file: '/home/miyoung/suehyun/DPR/data/amazon_specs/psgs_amazon_specs_meta.tsv'
+  id_prefix: 'spec-meta:'
+  
+amazon_spec_comparison:
+  _target_: dpr.data.retriever_data.CsvCtxSrcNewline
+  file: '/home/miyoung/suehyun/DPR/data/amazon_specs/psgs_amazon_specs_comparison.tsv'
+  id_prefix: 'spec-comparison:'
+  
+amazon_spec_details:
+  _target_: dpr.data.retriever_data.CsvCtxSrcNewline
+  file: '/home/miyoung/suehyun/DPR/data/amazon_specs/psgs_amazon_specs_details.tsv'
+  id_prefix: 'spec-details:'

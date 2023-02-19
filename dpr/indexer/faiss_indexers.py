@@ -14,6 +14,7 @@ import logging
 import numpy as np
 import os
 import pickle
+import pathlib
 
 from typing import List, Tuple
 
@@ -47,6 +48,7 @@ class DenseIndexer(object):
         else:
             index_file = file + ".index.dpr"
             meta_file = file + ".index_meta.dpr"
+        pathlib.Path(os.path.dirname(file)).mkdir(parents=True, exist_ok=True)
 
         faiss.write_index(self.index, index_file)
         with open(meta_file, mode="wb") as f:
@@ -105,6 +107,7 @@ class DenseFlatIndexer(DenseIndexer):
         logger.info("Total data indexed %d", indexed_cnt)
 
     def search_knn(self, query_vectors: np.array, top_docs: int) -> List[Tuple[List[object], List[float]]]:
+        query_vectors = np.float32(query_vectors)
         scores, indexes = self.index.search(query_vectors, top_docs)
         # convert to external ids
         db_ids = [[self.index_id_to_db_id[i] for i in query_top_idxs] for query_top_idxs in indexes]

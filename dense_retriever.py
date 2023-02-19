@@ -16,6 +16,8 @@ import pickle
 import time
 import zlib
 from typing import List, Tuple, Dict, Iterator
+import pathlib
+import os
 
 import hydra
 import numpy as np
@@ -71,6 +73,8 @@ def generate_question_vectors(
             else:
                 batch_tensors = [tensorizer.text_to_tensor(q) for q in batch_questions]
 
+            # https://github.com/facebookresearch/DPR/issues/213#issuecomment-1268333676
+            '''
             # TODO: this only works for Wav2vec pipeline but will crash the regular text pipeline
             max_vector_len = max(q_t.size(1) for q_t in batch_tensors)
             min_vector_len = min(q_t.size(1) for q_t in batch_tensors)
@@ -79,6 +83,7 @@ def generate_question_vectors(
                 # TODO: _pad_to_len move to utils
                 from dpr.models.reader import _pad_to_len
                 batch_tensors = [_pad_to_len(q.squeeze(0), 0, max_vector_len) for q in batch_tensors]
+            '''
 
             q_ids_batch = torch.stack(batch_tensors, dim=0).cuda()
             q_seg_batch = torch.zeros_like(q_ids_batch).cuda()
@@ -373,7 +378,8 @@ def save_results(
         #    results_item[questions_extra_attr] = extra
 
         merged_data.append(results_item)
-
+        
+    pathlib.Path(os.path.dirname(out_file)).mkdir(parents=True, exist_ok=True)
     with open(out_file, "w") as writer:
         writer.write(json.dumps(merged_data, indent=4) + "\n")
     logger.info("Saved results * scores  to %s", out_file)
@@ -416,6 +422,7 @@ def save_results_from_meta(
         }
         merged_data.append(results_item)
 
+    pathlib.Path(os.path.dirname(out_file)).mkdir(parents=True, exist_ok=True)
     with open(out_file, "w") as writer:
         writer.write(json.dumps(merged_data, indent=4) + "\n")
     logger.info("Saved results * scores  to %s", out_file)
@@ -501,7 +508,8 @@ def main(cfg: DictConfig):
 
     # get questions & answers
     questions = []
-    questions_text = []
+    # questions_text = []
+    questions_text = None
     question_answers = []
 
     if not cfg.qa_dataset:
@@ -522,7 +530,7 @@ def main(cfg: DictConfig):
         question_answers.append(answers)
 
     logger.info("questions len %d", len(questions))
-    logger.info("questions_text len %d", len(questions_text))
+    # logger.info("questions_text len %d", len(questions_text))
 
     if cfg.rpc_retriever_cfg_file:
         index_buffer_sz = 1000
@@ -591,9 +599,12 @@ def main(cfg: DictConfig):
         retriever.index_encoded_data(input_paths, index_buffer_sz, path_id_prefixes=path_id_prefixes)
         if index_path:
             retriever.index.serialize(index_path)
-
+    logger.info("Successfully indexed all passages.")
+    # return
     # get top k results
-    top_results_and_scores = retriever.get_top_docs(questions_tensor.numpy(), cfg.n_docs)
+    questions_tensor = questions_tensor.detach().cpu().numpy()
+    # print(questions_tensor)
+    top_results_and_scores = retriever.get_top_docs(questions_tensor, cfg.n_docs)
 
     if cfg.use_rpc_meta:
         questions_doc_hits = validate_from_meta(

@@ -179,6 +179,13 @@ def normalize_passage(ctx_text: str):
         ctx_text = ctx_text[:-1]
     return ctx_text
 
+def normalize_passage_keep_newline(ctx_text: str):
+    ctx_text = ctx_text.replace("’", "'")
+    if ctx_text.startswith('"'):
+        ctx_text = ctx_text[1:]
+    if ctx_text.endswith('"'):
+        ctx_text = ctx_text[:-1]
+    return ctx_text
 
 class Cell:
     def __init__(self):

@@ -26,8 +26,9 @@ setup(
     setup_requires=[
         "setuptools>=18.0",
     ],
+    py_modules=[],
     install_requires=[
-        "faiss-cpu>=1.6.1",
+        "faiss-cpu==1.6.1",
         "filelock",
         "numpy",
         "regex",
