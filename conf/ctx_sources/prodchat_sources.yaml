@@ -1,16 +1,16 @@
 # @package _group_
 
-amazon_laptops_review:
+amazon_review_laptops:
   _target_: dpr.data.retriever_data.CsvCtxSrcNewline
   file: '/home/miyoung/suehyun/DPR/data/amazon/review/psgs_laptops_reviews.tsv'
   id_prefix: 'laptops-review:'
 
-amazon_desktops_review:
+amazon_review_desktops:
   _target_: dpr.data.retriever_data.CsvCtxSrcNewline
   file: '/home/miyoung/suehyun/DPR/data/amazon/review/psgs_desktops_reviews.tsv'
   id_prefix: 'desktops-review:'
 
-amazon_components_review:
+amazon_review_components:
   _target_: dpr.data.retriever_data.CsvCtxSrcNewline
   file: '/home/miyoung/suehyun/DPR/data/amazon/review/psgs_components_reviews.tsv'
   id_prefix: 'components-review:'

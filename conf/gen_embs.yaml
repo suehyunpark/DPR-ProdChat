@@ -13,7 +13,7 @@ ctx_src: amazon_spec_details
 encoder_type: ctx
 
 # output .pickle file path to write results to
-out_file: '/home/miyoung/suehyun/DPR/data/retriever_results/multiset/seq_len=512/amazon_components_review_passages'
+out_file: '/home/miyoung/suehyun/DPR/data/retriever_results/multiset/seqlen-512/amazon_components_review_passages'
 
 # Whether to lower case the input text. Set True for uncased models, False for the cased ones.
 do_lower_case: True
