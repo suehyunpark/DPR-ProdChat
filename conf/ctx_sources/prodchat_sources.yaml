@@ -1,31 +1,41 @@
 # @package _group_
 
-amazon_review:
+amazon_laptops_review:
   _target_: dpr.data.retriever_data.CsvCtxSrcNewline
-  file: '/home/miyoung/suehyun/DPR/data/amazon_review/psgs_amazon_review.tsv'
-  id_prefix: 'review:'
+  file: '/home/miyoung/suehyun/DPR/data/amazon/review/psgs_laptops_reviews.tsv'
+  id_prefix: 'laptops-review:'
 
-amazon_spec_features:
+amazon_desktops_review:
   _target_: dpr.data.retriever_data.CsvCtxSrcNewline
-  file: '/home/miyoung/suehyun/DPR/data/amazon_specs/psgs_amazon_specs_features_filtered.tsv'
-  id_prefix: 'spec-features:'
+  file: '/home/miyoung/suehyun/DPR/data/amazon/review/psgs_desktops_reviews.tsv'
+  id_prefix: 'desktops-review:'
 
-amazon_spec_description:
+amazon_components_review:
   _target_: dpr.data.retriever_data.CsvCtxSrcNewline
-  file: '/home/miyoung/suehyun/DPR/data/amazon_specs/psgs_amazon_specs_description_filtered.tsv'
-  id_prefix: 'spec-description:'
+  file: '/home/miyoung/suehyun/DPR/data/amazon/review/psgs_components_reviews.tsv'
+  id_prefix: 'components-review:'
+
+amazon_specs_features:
+  _target_: dpr.data.retriever_data.CsvCtxSrcNewline
+  file: '/home/miyoung/suehyun/DPR/data/amazon/specs/psgs_amazon_specs_features_filtered.tsv'
+  id_prefix: 'specs-features:'
+
+amazon_specs_description:
+  _target_: dpr.data.retriever_data.CsvCtxSrcNewline
+  file: '/home/miyoung/suehyun/DPR/data/amazon/specs/psgs_amazon_specs_description_filtered.tsv'
+  id_prefix: 'specs-description:'
   
-amazon_spec_meta:
+amazon_specs_meta:
   _target_: dpr.data.retriever_data.CsvCtxSrcNewline
-  file: '/home/miyoung/suehyun/DPR/data/amazon_specs/psgs_amazon_specs_meta.tsv'
-  id_prefix: 'spec-meta:'
+  file: '/home/miyoung/suehyun/DPR/data/amazon/specs/psgs_amazon_specs_meta.tsv'
+  id_prefix: 'specs-meta:'
   
-amazon_spec_comparison:
+amazon_specs_comparison:
   _target_: dpr.data.retriever_data.CsvCtxSrcNewline
-  file: '/home/miyoung/suehyun/DPR/data/amazon_specs/psgs_amazon_specs_comparison.tsv'
-  id_prefix: 'spec-comparison:'
+  file: '/home/miyoung/suehyun/DPR/data/amazon/specs/psgs_amazon_specs_comparison.tsv'
+  id_prefix: 'specs-comparison:'
   
-amazon_spec_details:
+amazon_specs_details:
   _target_: dpr.data.retriever_data.CsvCtxSrcNewline
-  file: '/home/miyoung/suehyun/DPR/data/amazon_specs/psgs_amazon_specs_details.tsv'
-  id_prefix: 'spec-details:'
+  file: '/home/miyoung/suehyun/DPR/data/amazon/specs/psgs_amazon_specs_details.tsv'
+  id_prefix: 'specs-details:'
