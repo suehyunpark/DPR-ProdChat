@@ -2,18 +2,19 @@
 QA_DATA=$1
 CTX_SRC_LIST=$2
 ENCODED_CTX_LIST=$3
-INDEX_FILE=$4
-OUT_FILE=$5
+N_DOCS=$4
+INDEX_FILE=$5
+OUT_FILE=$6
 
-shift 5
+shift 6
 
 python dense_retriever.py \
 model_file="/home/miyoung/suehyun/DPR/checkpoint/retriever/multiset/bert-base-encoder.cp" \
 encoder.sequence_length=512 \
-n_docs=10 \
 qa_dataset=$QA_DATA \
 ctx_datatsets=$CTX_SRC_LIST \
 encoded_ctx_files=$ENCODED_CTX_LIST \
+n_docs=$N_DOCS \
 index_path=$INDEX_FILE \
 out_file=$OUT_FILE "$@"
 
