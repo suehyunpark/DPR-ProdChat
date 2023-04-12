@@ -628,6 +628,11 @@ def main(cfg: DictConfig):
                 cfg.rpc_meta_compressed,
             )
     else:
+        ctx_sources = []
+        for ctx_src in cfg.ctx_datatsets:
+            ctx_src = hydra.utils.instantiate(cfg.ctx_sources[ctx_src])
+            ctx_sources.append(ctx_src)
+            logger.info("ctx_sources: %s", type(ctx_src))
         all_passages = get_all_passages(ctx_sources)
         if cfg.validate_as_tables:
 

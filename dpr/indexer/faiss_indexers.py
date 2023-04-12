@@ -43,11 +43,11 @@ class DenseIndexer(object):
         logger.info("Serializing index to %s", file)
 
         if os.path.isdir(file):
-            index_file = os.path.join(file, "index.dpr")
-            meta_file = os.path.join(file, "index_meta.dpr")
+            index_file = os.path.join(file, ".{}.dpr".format(self.get_index_name()))
+            meta_file = os.path.join(file, ".{}_meta.dpr".format(self.get_index_name()))
         else:
-            index_file = file + ".index.dpr"
-            meta_file = file + ".index_meta.dpr"
+            index_file = file + ".{}.dpr".format(self.get_index_name())
+            meta_file = file + ".{}_meta.dpr".format(self.get_index_name())
         pathlib.Path(os.path.dirname(file)).mkdir(parents=True, exist_ok=True)
 
         faiss.write_index(self.index, index_file)
@@ -56,8 +56,8 @@ class DenseIndexer(object):
 
     def get_files(self, path: str):
         if os.path.isdir(path):
-            index_file = os.path.join(path, "index.dpr")
-            meta_file = os.path.join(path, "index_meta.dpr")
+            index_file = os.path.join(path, ".{}.dpr".format(self.get_index_name()))
+            meta_file = os.path.join(path, ".{}_meta.dpr".format(self.get_index_name()))
         else:
             index_file = path + ".{}.dpr".format(self.get_index_name())
             meta_file = path + ".{}_meta.dpr".format(self.get_index_name())
@@ -65,6 +65,7 @@ class DenseIndexer(object):
 
     def index_exists(self, path: str):
         index_file, meta_file = self.get_files(path)
+        print(index_file, meta_file)
         return os.path.isfile(index_file) and os.path.isfile(meta_file)
 
     def deserialize(self, path: str):
