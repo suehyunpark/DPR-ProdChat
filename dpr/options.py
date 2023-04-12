@@ -112,7 +112,7 @@ def setup_cfg_gpu(cfg):
         )
 
     elif cfg.local_rank == -1 or cfg.no_cuda:  # single-node multi-gpu (or cpu) mode
-        device = str(torch.device("cuda" if torch.cuda.is_available() and not cfg.no_cuda else "cpu"))
+        device = str(torch.device(f"cuda:{cfg.device}" if torch.cuda.is_available() and not cfg.no_cuda else "cpu"))
         # cfg.n_gpu = torch.cuda.device_count()
         cfg.n_gpu = 1
     else:  # distributed mode

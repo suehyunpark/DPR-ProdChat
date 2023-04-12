@@ -16,16 +16,22 @@ indexers:
 # the name of the queries dataset from the 'datasets' config group
 qa_dataset: reddit_test
 
+# ID of question (query) in the queries dataset to retrieve contexts for
+question_id:
+
 # a list of names of the passages datasets from the 'ctx_sources' config group
 ctx_datatsets: [amazon_review]
 
 #Glob paths to encoded passages (from generate_dense_embeddings tool)
 encoded_ctx_files: ['/home/miyoung/suehyun/DPR/data/retriever_results/multiset/seq_len=512/amazon_review_passages_0']
 
+# ID of product to find
+product_id:
+
 out_file: '/home/miyoung/suehyun/DPR/data/retriever_results/reddit/multiset/seq_len=512/test.json'
 # "regex" or "string"
 match: string
-n_docs: 1000
+n_docs: 10
 validation_workers: 16
 
 # Batch size to generate query embeddings
@@ -42,7 +48,7 @@ encoder_path: question_model
 # (instead of using encoded_ctx_files)
 # it should point to either directory or a common index files prefix name
 # if there is no index at the specific location, the index will be created from encoded_ctx_files
-index_path: '/home/miyoung/suehyun/DPR/indexes/multiset/seq_len=512/amazon_review'
+index_path: '/home/miyoung/suehyun/DPR/indexes/multiset/seqlen-512/amazon_sampled'
 
 kilt_out_file:
 
@@ -67,7 +73,7 @@ special_tokens:
 # local_rank for distributed training on gpus
 local_rank: -1
 global_loss_buf_sz: 150000
-device: 1
+device: 0
 distributed_world_size:
 distributed_port:
 no_cuda: False

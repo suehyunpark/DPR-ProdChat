@@ -34,8 +34,8 @@ from dpr.utils.model_utils import (
     move_to_device,
 )
 
-# import transformers
-# transformers.logging.set_verbosity_error()
+import transformers
+transformers.logging.set_verbosity_error()
 
 logger = logging.getLogger()
 setup_logger(logger)
@@ -96,7 +96,8 @@ def main(cfg: DictConfig):
 
     logger.info("CFG:")
     logger.info("%s", OmegaConf.to_yaml(cfg))
-
+    logger.info("hydra config is okay")
+    # '''
     tensorizer, encoder, _ = init_biencoder_components(cfg.encoder.encoder_model_type, cfg, inference_only=True)
 
     encoder = encoder.ctx_model if cfg.encoder_type == "ctx" else encoder.question_model
@@ -127,7 +128,10 @@ def main(cfg: DictConfig):
 
     ctx_src = hydra.utils.instantiate(cfg.ctx_sources[cfg.ctx_src])
     all_passages_dict = {}
-    ctx_src.load_data_to(all_passages_dict)
+    if cfg.product_id:
+        ctx_src.load_partial_data_to(all_passages_dict, product_id=cfg.product_id)
+    else:
+        ctx_src.load_data_to(all_passages_dict)
     all_passages = [(k, v) for k, v in all_passages_dict.items()]  # (sample_id, BiencoderPassage(text, title))
 
     shard_size = math.ceil(len(all_passages) / cfg.num_shards)
@@ -151,6 +155,7 @@ def main(cfg: DictConfig):
         pickle.dump(data, f)  # not solvable with dill
 
     logger.info("Total passages processed %d. Written to %s", len(data), file)
+    # '''
 
 
 if __name__ == "__main__":

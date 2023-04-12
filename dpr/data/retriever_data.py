@@ -135,11 +135,13 @@ class JsonQASrc(QASrc):
         id_attr: str = "sid",
         special_query_token: str = None,
         query_special_suffix: str = None,
+        from_data: bool = True
     ):
         super().__init__(file, selector, special_query_token, query_special_suffix)
         self.question_attr = question_attr
         self.answers_attr = answers_attr
         self.id_attr = id_attr
+        self.from_data = from_data
         
     def load_data(self):
         super().load_data()
@@ -151,7 +153,40 @@ class JsonQASrc(QASrc):
                 answer = jobj[self.answers_attr]
                 id = jobj[self.id_attr]
                 data.append(QASample(self._process_question(question), id, answer))
-        self.data = data
+        self.data = data 
+               
+        
+class JsonSampledQASrc(QASrc):
+    def __init__(
+        self,
+        file: str,
+        selector: DictConfig = None,
+        question_title_attr: str = "q_title",
+        question_body_attr: str = "q_body",
+        answers_attr: str = "comments",
+        id_attr: str = "num",
+        special_query_token: str = None,
+        query_special_suffix: str = None,
+        from_data: bool = False
+    ):
+        super().__init__(file, selector, special_query_token, query_special_suffix)
+        self.question_title_attr = question_title_attr
+        self.question_body_attr = question_body_attr
+        self.answers_attr = answers_attr
+        self.id_attr = id_attr
+        self.from_data = from_data
+        
+    def load_data(self):
+        super().load_data()
+        data = []
+        with open(self.file, mode="r") as json_reader:
+            jobjs = json.load(json_reader)
+            for jobj in jobjs:
+                question = f"title:{jobj[self.question_title_attr]}\nbody:{jobj[self.question_body_attr]}"
+                answer = jobj[self.answers_attr]
+                id = jobj[self.id_attr]
+                data.append(QASample(self._process_question(question), id, answer))
+        self.data = data 
                 
 
 class JsonlQASrc(QASrc):
@@ -354,6 +389,40 @@ class CsvCtxSrcNewline(RetrieverData):
                 if self.normalize:
                     passage = normalize_passage_keep_newline(passage)
                 ctxs[sample_id] = BiEncoderPassage(passage, row[self.title_col])
+ 
+    
+class JsonlCtxSrc(RetrieverData):
+    def __init__(
+        self,
+        file: str,
+        id_attr: str = "doc_id",
+        title_attr: str = "title",
+        body_attr: str = "body",
+        product_attr: str = "product",
+        id_prefix: str = None,
+        normalize: bool = True
+    ):
+        super().__init__(file)
+        self.id_attr = id_attr
+        self.title_attr = title_attr
+        self.body_attr = body_attr
+        self.product_attr = product_attr
+        self.id_prefix = id_prefix
+        self.normalize = normalize
+        
+    def load_data_to(self, ctxs: Dict[object, BiEncoderPassage]):
+        super().load_data()
+        logger.info("Reading file %s", self.file)
+        with open(self.file) as ifile:
+            for line in ifile:
+                data = json.loads(line)
+                sample_id = data[self.id_attr]
+                passage = data[self.body_attr]
+                if self.product_attr in data:  # for review data, prepend product name to review body
+                    passage = data[self.product_attr] + "\n" + passage
+                if self.normalize:
+                    passage = normalize_passage(passage)
+                ctxs[sample_id] = BiEncoderPassage(passage, data[self.title_attr])
 
 
 class KiltCsvCtxSrc(CsvCtxSrc):

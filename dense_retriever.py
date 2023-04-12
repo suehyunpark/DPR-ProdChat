@@ -58,6 +58,7 @@ def generate_question_vectors(
 
     with torch.no_grad():
         for j, batch_start in enumerate(range(0, n, bsz)):
+            logger.info(f"Processing batch {j} / {n // bsz}")
             batch_questions = questions[batch_start : batch_start + bsz]
 
             if query_token:
@@ -84,7 +85,7 @@ def generate_question_vectors(
                 from dpr.models.reader import _pad_to_len
                 batch_tensors = [_pad_to_len(q.squeeze(0), 0, max_vector_len) for q in batch_tensors]
             '''
-
+            logger.info(f"Batch tensors: {[q_t.size() for q_t in batch_tensors]}")
             q_ids_batch = torch.stack(batch_tensors, dim=0).cuda()
             q_seg_batch = torch.zeros_like(q_ids_batch).cuda()
             q_attn_mask = tensorizer.get_attn_mask(q_ids_batch)
@@ -520,7 +521,10 @@ def main(cfg: DictConfig):
     logger.info("qa_dataset: %s", ds_key)
 
     qa_src = hydra.utils.instantiate(cfg.datasets[ds_key])
-    qa_src.load_data()
+    if cfg.question_id:
+        qa_src.load_partial_data(cfg.question_id)
+    else:
+        qa_src.load_data()
 
     total_queries = len(qa_src)
     for i in range(total_queries):
