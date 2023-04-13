@@ -85,7 +85,7 @@ def generate_question_vectors(
                 from dpr.models.reader import _pad_to_len
                 batch_tensors = [_pad_to_len(q.squeeze(0), 0, max_vector_len) for q in batch_tensors]
             '''
-            logger.info(f"Batch tensors: {[q_t.size() for q_t in batch_tensors]}")
+            # logger.info(f"Batch tensors: {[q_t.size() for q_t in batch_tensors]}")
             q_ids_batch = torch.stack(batch_tensors, dim=0).cuda()
             q_seg_batch = torch.zeros_like(q_ids_batch).cuda()
             q_attn_mask = tensorizer.get_attn_mask(q_ids_batch)
@@ -342,6 +342,7 @@ def validate_from_meta(
 
 def save_results(
     passages: Dict[object, Tuple[str, str]],
+    ids: List[object],
     questions: List[str],
     answers: List[List[str]],
     top_passages_and_scores: List[Tuple[List[object], List[float]]],
@@ -352,6 +353,7 @@ def save_results(
     merged_data = []
     # assert len(per_question_hits) == len(questions) == len(answers)
     for i, q in enumerate(questions):
+        id = ids[i]
         q_answers = answers[i]
         results_and_scores = top_passages_and_scores[i]
         hits = per_question_hits[i]
@@ -360,6 +362,7 @@ def save_results(
         ctxs_num = len(hits)
 
         results_item = {
+            "id": id,
             "question": q,
             "answers": q_answers,
             "ctxs": [
@@ -508,9 +511,8 @@ def main(cfg: DictConfig):
     logger.info("Encoder vector_size=%d", vector_size)
 
     # get questions & answers
-    questions = []
-    # questions_text = []
-    questions_text = None
+    question_ids = []
+    question_texts = []
     question_answers = []
 
     if not cfg.qa_dataset:
@@ -529,11 +531,11 @@ def main(cfg: DictConfig):
     total_queries = len(qa_src)
     for i in range(total_queries):
         qa_sample = qa_src[i]
-        question, answers = qa_sample.query, qa_sample.answers
-        questions.append(question)
-        question_answers.append(answers)
+        question_ids.append(qa_sample.id)
+        question_texts.append(qa_sample.query)
+        question_answers.append(qa_sample.answers)
 
-    logger.info("questions len %d", len(questions))
+    logger.info("questions len %d", len(question_ids))
     # logger.info("questions_text len %d", len(questions_text))
 
     if cfg.rpc_retriever_cfg_file:
@@ -554,7 +556,7 @@ def main(cfg: DictConfig):
         retriever = LocalFaissRetriever(encoder, cfg.batch_size, tensorizer, index)
 
     logger.info("Using special token %s", qa_src.special_query_token)
-    questions_tensor = retriever.generate_question_vectors(questions, query_token=qa_src.special_query_token)
+    questions_tensor = retriever.generate_question_vectors(question_texts, query_token=qa_src.special_query_token)
 
     if qa_src.selector:
         logger.info("Using custom representation token selector")
@@ -604,10 +606,8 @@ def main(cfg: DictConfig):
         if index_path:
             retriever.index.serialize(index_path)
     logger.info("Successfully indexed all passages.")
-    # return
     # get top k results
     questions_tensor = questions_tensor.detach().cpu().numpy()
-    # print(questions_tensor)
     top_results_and_scores = retriever.get_top_docs(questions_tensor, cfg.n_docs)
 
     if cfg.use_rpc_meta:
@@ -620,7 +620,7 @@ def main(cfg: DictConfig):
         )
         if cfg.out_file:
             save_results_from_meta(
-                questions,
+                question_texts,
                 question_answers,
                 top_results_and_scores,
                 questions_doc_hits,
@@ -656,7 +656,8 @@ def main(cfg: DictConfig):
         if cfg.out_file:
             save_results(
                 all_passages,
-                questions_text if questions_text else questions,
+                question_ids,
+                question_texts, # if question_texts else questions,
                 question_answers,
                 top_results_and_scores,
                 questions_doc_hits,
